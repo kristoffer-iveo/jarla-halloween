@@ -51,7 +51,11 @@ ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 4px 12px; align-items: start;
   padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; }
 li.sel { border-color: var(--pumpkin); }
-li.done { opacity: .55; }
+li.done { opacity: .7; }
+.rate { display: flex; gap: 2px; margin-top: 6px; margin-left: -6px; }
+.rate button { width: 36px; height: 36px; border: 0; background: none; color: var(--line); font-size: 24px; line-height: 1; cursor: pointer; border-radius: 6px; padding: 0; }
+.rate button.on { color: var(--pumpkin); }
+.rate button:focus-visible { outline: 2px solid var(--pumpkin); }
 li.done .addr { text-decoration: line-through; }
 .n { width: 28px; height: 28px; border-radius: 50%; background: var(--pumpkin); color: var(--pumpkin-ink); font-weight: 700;
   display: grid; place-items: center; font-variant-numeric: tabular-nums; }
@@ -76,7 +80,7 @@ button.reset:focus-visible, li:focus-visible { outline: 2px solid var(--pumpkin)
   <header>
     <h1>Bus eller godis i Järla Sjö</h1>
     <div class="meta">
-      <span>Lördag 31 oktober</span><span>Facebook kollat <b>14:20</b></span><span>Ca <b>16–19</b></span>
+      <span>Lördag 31 oktober</span><span>Facebook kollat <b>14:28</b></span><span>Ca <b>16–19</b></span>
       <span><b id="cnt">0</b> av <b id="tot">0</b> besökta</span>
       <button class="reset" id="reset" type="button">Nollställ</button>
     </div>
@@ -132,9 +136,9 @@ button.reset:focus-visible, li:focus-visible { outline: 2px solid var(--pumpkin)
 <script>
 const H = [{"a": "Buddes gränd 6", "i": "Vån 3", "e": 1, "d": "v", "x": 967.4, "y": 249.4, "lat": 59.3057141, "lon": 18.1530038}, {"a": "Buddes gränd 8", "i": "", "e": 1, "d": "", "x": 970.4, "y": 301.8, "lat": 59.3055704, "lon": 18.1530199}, {"a": "Buddes gränd 9", "i": "Vån 3", "e": 0, "d": "v", "x": 1000.2, "y": 283.7, "lat": 59.30562, "lon": 18.15318}, {"a": "Buddes gränd 10", "i": "Entréplan", "e": 0, "d": "g", "x": 957.3, "y": 345.8, "lat": 59.30545, "lon": 18.15295}, {"a": "Hebbes gränd 12", "i": "Gå via innergården, inte huvudentrén", "e": 0, "d": "g", "x": 1243.5, "y": 379.0, "lat": 59.305359, "lon": 18.1544849}, {"a": "Fyrgränd 6", "i": "Bottenvåning", "e": 0, "d": "g", "x": 1281.4, "y": 120.0, "lat": 59.3060683, "lon": 18.1546882}, {"a": "Gustaf de Lavals väg 18", "i": "", "e": 1, "d": "", "x": 681.3, "y": 801.9, "lat": 59.3042009, "lon": 18.1514691}, {"a": "Turbinvägen 5B", "i": "Bottenplan, dörren längst in till vänster", "e": 0, "d": "g", "x": 589.5, "y": 581.1, "lat": 59.3048057, "lon": 18.150977}, {"a": "Winborgs väg 19", "i": "Kör all in kl 16–19. Släng inte skräp på marken!", "e": 1, "d": "", "x": 538.3, "y": 426.7, "lat": 59.3052284, "lon": 18.1507021}, {"a": "Winborgs väg 21", "i": "Kör all in kl 16–19", "e": 1, "d": "", "x": 522.8, "y": 472.7, "lat": 59.3051024, "lon": 18.1506189}, {"a": "Fingerörtsvägen 10", "i": "Vån 6", "e": 1, "d": "v", "x": 416.8, "y": 270.7, "lat": 59.3056556, "lon": 18.1500505}, {"a": "Garverigränd 12", "i": "Vån 5", "e": 1, "d": "v", "x": 120.0, "y": 526.2, "lat": 59.3049559, "lon": 18.1484582}];
 const KEY = "jarla-halloween-2026";
-let done = new Set();
-try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
+let done = new Set(), rate = {};
+try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); rate = JSON.parse(localStorage.getItem(KEY + "-rate") || "{}"); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); localStorage.setItem(KEY + "-rate", JSON.stringify(rate)); } catch (e) {} };
 const PIN = matchMedia("(max-width: 860px)").matches ? 1.6 : 1; // bigger tap targets on phones
 const NS = "http://www.w3.org/2000/svg", pins = document.getElementById("pins"), list = document.getElementById("list");
 const els = H.map((h, i) => {
@@ -149,7 +153,8 @@ const els = H.map((h, i) => {
     <div><div class="addr">${h.a}</div>${h.i ? `<div class="info">${h.i}</div>` : ""}
     ${h.d === "g" ? `<span class="door ok">Ingen port, nås från marken</span>` : h.d === "v" ? `<span class="door lock">Våning: porten kan vara låst, ring på</span>` : ""}
     ${h.e ? "" : `<div class="approx">Ungefärligt läge på kartan</div>`}
-    <div class="src"><a href="${maps}" target="_blank" rel="noopener">Vägbeskrivning</a></div></div>
+    <div class="src"><a href="${maps}" target="_blank" rel="noopener">Vägbeskrivning</a></div>
+    <div class="rate" role="group" aria-label="Betyg för ${h.a}">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-label="${n} av 5">★</button>`).join("")}</div></div>
     <label class="chk"><input type="checkbox" id="v${i}"> Besökt</label>`;
   list.appendChild(li);
   const cb = li.querySelector("input");
@@ -157,6 +162,12 @@ const els = H.map((h, i) => {
   cb.addEventListener("change", () => { cb.checked ? done.add(h.a) : done.delete(h.a); save(); paint(); });
   li.querySelector("label").addEventListener("click", e => e.stopPropagation());
   li.querySelector("a").addEventListener("click", e => e.stopPropagation());
+  li.querySelector(".rate").addEventListener("click", e => {
+    e.stopPropagation();
+    const n = +(e.target.dataset.n || 0); if (!n) return;
+    if (rate[h.a] === n) delete rate[h.a]; else { rate[h.a] = n; done.add(h.a); cb.checked = true; } // tap same star again to clear
+    save(); paint();
+  });
   li.addEventListener("click", () => { select(i); center(i, "auto"); document.querySelector(".map").scrollIntoView({ behavior: "smooth", block: "nearest" }); });
   g.addEventListener("click", () => { select(i); li.scrollIntoView({ behavior: "smooth", block: "nearest" }); });
   [li, g].forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.dispatchEvent(new Event("click")); } }));
@@ -173,12 +184,15 @@ function select(i) {
   pins.appendChild(els[i].g); // draw selected on top
 }
 function paint() {
-  H.forEach((h, i) => { const d = done.has(h.a); els[i].g.classList.toggle("done", d); els[i].li.classList.toggle("done", d); });
+  H.forEach((h, i) => {
+    const d = done.has(h.a); els[i].g.classList.toggle("done", d); els[i].li.classList.toggle("done", d);
+    els[i].li.querySelectorAll(".rate button").forEach(b => { const on = +b.dataset.n <= (rate[h.a] || 0); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+  });
   document.getElementById("cnt").textContent = done.size;
 }
 document.getElementById("tot").textContent = H.length;
 document.getElementById("reset").addEventListener("click", () => {
-  done.clear(); save(); document.querySelectorAll("#list input").forEach(c => c.checked = false); paint();
+  done.clear(); rate = {}; save(); document.querySelectorAll("#list input").forEach(c => c.checked = false); paint();
 });
 paint();
 // zoom: level 0 = whole map fits the box, then 0.6× and 1× tile scale
