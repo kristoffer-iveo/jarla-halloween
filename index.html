@@ -31,7 +31,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 6vw, 
 @media (max-width: 860px) {
   /* ponytail: native-scale pannable map on phones so pins stay finger-sized */
   .scroll { max-height: 58vh; }
-  .map svg { width: 1401px; max-width: none; }
+  .map svg { width: calc(1401px * .6); max-width: none; }
   .hint { display: inline; }
 }
 .tiles { filter: invert(1) hue-rotate(185deg) brightness(.85) contrast(.95) saturate(.6); }
@@ -39,7 +39,7 @@ h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 6vw, 
 .pin circle { fill: var(--pumpkin); stroke: var(--pumpkin-ink); stroke-width: 3; transition: r .15s; }
 .pin text { fill: var(--pumpkin-ink); font: 700 15px var(--body); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
 .pin.done circle { fill: var(--done); }
-.pin.sel circle { stroke: #fff; stroke-width: 4; r: 19; }
+.pin.sel circle { stroke: #fff; stroke-width: 5; }
 .pin:focus-visible circle { stroke: #fff; stroke-width: 4; }
 .credit { font-size: 11px; color: var(--muted); padding: 6px 10px; border-top: 1px solid var(--line); }
 ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -123,11 +123,12 @@ const KEY = "jarla-halloween-2026";
 let done = new Set();
 try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
+const PIN = matchMedia("(max-width: 860px)").matches ? 1.6 : 1; // bigger tap targets on phones
 const NS = "http://www.w3.org/2000/svg", pins = document.getElementById("pins"), list = document.getElementById("list");
 const els = H.map((h, i) => {
   const g = document.createElementNS(NS, "g");
   g.setAttribute("class", "pin"); g.setAttribute("tabindex", "0");
-  g.setAttribute("transform", `translate(${h.x} ${h.y})`);
+  g.setAttribute("transform", `translate(${h.x} ${h.y}) scale(${PIN})`);
   g.innerHTML = `<title>${h.a}</title><circle r="15"></circle><text>${i + 1}</text>`;
   pins.appendChild(g);
   const li = document.createElement("li"); li.tabIndex = 0;
@@ -143,7 +144,7 @@ const els = H.map((h, i) => {
   cb.addEventListener("change", () => { cb.checked ? done.add(h.a) : done.delete(h.a); save(); paint(); });
   li.querySelector("label").addEventListener("click", e => e.stopPropagation());
   li.querySelector("a").addEventListener("click", e => e.stopPropagation());
-  li.addEventListener("click", () => { select(i); center(i, "smooth"); document.querySelector(".map").scrollIntoView({ behavior: "smooth", block: "nearest" }); });
+  li.addEventListener("click", () => { select(i); center(i, "auto"); document.querySelector(".map").scrollIntoView({ behavior: "smooth", block: "nearest" }); });
   g.addEventListener("click", () => { select(i); li.scrollIntoView({ behavior: "smooth", block: "nearest" }); });
   [li, g].forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.dispatchEvent(new Event("click")); } }));
   return { g, li };
