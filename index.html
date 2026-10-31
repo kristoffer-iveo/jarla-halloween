@@ -60,6 +60,9 @@ li.done .n { background: var(--done); }
 .info { color: var(--fg); }
 .src { color: var(--muted); font-size: 12px; }
 .src a { color: var(--muted); }
+.door { display: inline-block; margin-block: 4px 2px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.door.ok { background: color-mix(in srgb, var(--done) 18%, transparent); color: var(--done); }
+.door.lock { background: color-mix(in srgb, var(--pumpkin) 16%, transparent); color: var(--pumpkin); }
 .approx { color: var(--pumpkin); font-size: 12px; }
 label.chk { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; white-space: nowrap; }
 label.chk input { width: 20px; height: 20px; accent-color: var(--done); }
@@ -73,7 +76,7 @@ button.reset:focus-visible, li:focus-visible { outline: 2px solid var(--pumpkin)
   <header>
     <h1>Bus eller godis i Järla Sjö</h1>
     <div class="meta">
-      <span>Lördag 31 oktober</span><span>Ca <b>16–19</b></span>
+      <span>Lördag 31 oktober</span><span>Uppdaterad <b>11:08</b></span><span>Ca <b>16–19</b></span>
       <span><b id="cnt">0</b> av <b id="tot">0</b> besökta</span>
       <button class="reset" id="reset" type="button">Nollställ</button>
     </div>
@@ -121,13 +124,13 @@ button.reset:focus-visible, li:focus-visible { outline: 2px solid var(--pumpkin)
     </div>
     <div>
       <ol id="list"></ol>
-      <p class="note">Insamlat 31 okt från <a href="https://www.facebook.com/groups/175799751392851/posts/1413244044315076" target="_blank" rel="noopener">Halloween i Järla Sjö</a> och Halloween Järla sjö 👻. Ingen har lagt upp någon portkod. Där det står "ungefärligt läge" hittade kartan bara gatan, inte exakt hus. Tips från gruppen: dela ut godiset själv så det räcker till barnen som kommer senare.</p>
+      <p class="note">Insamlat 31 okt från <a href="https://www.facebook.com/groups/175799751392851/posts/1413244044315076" target="_blank" rel="noopener">Halloween i Järla Sjö</a> och Halloween Järla sjö 👻. Ingen har lagt upp någon portkod. Där det står våning kan porten vara låst: ring på porttelefonen eller vänta tills någon öppnar. Där det står "ungefärligt läge" hittade kartan bara gatan, inte exakt hus. Tips från gruppen: dela ut godiset själv så det räcker till barnen som kommer senare.</p>
     </div>
   </div>
 </div>
 
 <script>
-const H = [{"a": "Buddes gränd 6", "i": "Vån 3", "e": 1, "x": 967.4, "y": 249.4, "lat": 59.3057141, "lon": 18.1530038}, {"a": "Buddes gränd 8", "i": "", "e": 1, "x": 970.4, "y": 301.8, "lat": 59.3055704, "lon": 18.1530199}, {"a": "Buddes gränd 9", "i": "Vån 3", "e": 0, "x": 1000.2, "y": 283.7, "lat": 59.30562, "lon": 18.15318}, {"a": "Buddes gränd 10", "i": "Entréplan", "e": 0, "x": 957.3, "y": 345.8, "lat": 59.30545, "lon": 18.15295}, {"a": "Hebbes gränd 12", "i": "Gå via innergården, inte huvudentrén", "e": 0, "x": 1243.5, "y": 379.0, "lat": 59.305359, "lon": 18.1544849}, {"a": "Fyrgränd 6", "i": "Bottenvåning", "e": 0, "x": 1281.4, "y": 120.0, "lat": 59.3060683, "lon": 18.1546882}, {"a": "Gustaf de Lavals väg 18", "i": "", "e": 1, "x": 681.3, "y": 801.9, "lat": 59.3042009, "lon": 18.1514691}, {"a": "Turbinvägen 5B", "i": "Bottenplan, dörren längst in till vänster", "e": 0, "x": 589.5, "y": 581.1, "lat": 59.3048057, "lon": 18.150977}, {"a": "Winborgs väg 19", "i": "Kör all in kl 16–19. Släng inte skräp på marken!", "e": 1, "x": 538.3, "y": 426.7, "lat": 59.3052284, "lon": 18.1507021}, {"a": "Winborgs väg 21", "i": "Kör all in kl 16–19", "e": 1, "x": 522.8, "y": 472.7, "lat": 59.3051024, "lon": 18.1506189}, {"a": "Fingerörtsvägen 10", "i": "Vån 6", "e": 1, "x": 416.8, "y": 270.7, "lat": 59.3056556, "lon": 18.1500505}, {"a": "Garverigränd 12", "i": "Vån 5", "e": 1, "x": 120.0, "y": 526.2, "lat": 59.3049559, "lon": 18.1484582}];
+const H = [{"a": "Buddes gränd 6", "i": "Vån 3", "e": 1, "d": "v", "x": 967.4, "y": 249.4, "lat": 59.3057141, "lon": 18.1530038}, {"a": "Buddes gränd 8", "i": "", "e": 1, "d": "", "x": 970.4, "y": 301.8, "lat": 59.3055704, "lon": 18.1530199}, {"a": "Buddes gränd 9", "i": "Vån 3", "e": 0, "d": "v", "x": 1000.2, "y": 283.7, "lat": 59.30562, "lon": 18.15318}, {"a": "Buddes gränd 10", "i": "Entréplan", "e": 0, "d": "g", "x": 957.3, "y": 345.8, "lat": 59.30545, "lon": 18.15295}, {"a": "Hebbes gränd 12", "i": "Gå via innergården, inte huvudentrén", "e": 0, "d": "g", "x": 1243.5, "y": 379.0, "lat": 59.305359, "lon": 18.1544849}, {"a": "Fyrgränd 6", "i": "Bottenvåning", "e": 0, "d": "g", "x": 1281.4, "y": 120.0, "lat": 59.3060683, "lon": 18.1546882}, {"a": "Gustaf de Lavals väg 18", "i": "", "e": 1, "d": "", "x": 681.3, "y": 801.9, "lat": 59.3042009, "lon": 18.1514691}, {"a": "Turbinvägen 5B", "i": "Bottenplan, dörren längst in till vänster", "e": 0, "d": "g", "x": 589.5, "y": 581.1, "lat": 59.3048057, "lon": 18.150977}, {"a": "Winborgs väg 19", "i": "Kör all in kl 16–19. Släng inte skräp på marken!", "e": 1, "d": "", "x": 538.3, "y": 426.7, "lat": 59.3052284, "lon": 18.1507021}, {"a": "Winborgs väg 21", "i": "Kör all in kl 16–19", "e": 1, "d": "", "x": 522.8, "y": 472.7, "lat": 59.3051024, "lon": 18.1506189}, {"a": "Fingerörtsvägen 10", "i": "Vån 6", "e": 1, "d": "v", "x": 416.8, "y": 270.7, "lat": 59.3056556, "lon": 18.1500505}, {"a": "Garverigränd 12", "i": "Vån 5", "e": 1, "d": "v", "x": 120.0, "y": 526.2, "lat": 59.3049559, "lon": 18.1484582}];
 const KEY = "jarla-halloween-2026";
 let done = new Set();
 try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) {}
@@ -144,6 +147,7 @@ const els = H.map((h, i) => {
   const maps = `https://www.google.com/maps/search/?api=1&query=${h.lat},${h.lon}`;
   li.innerHTML = `<span class="n">${i + 1}</span>
     <div><div class="addr">${h.a}</div>${h.i ? `<div class="info">${h.i}</div>` : ""}
+    ${h.d === "g" ? `<span class="door ok">Ingen port, nås från marken</span>` : h.d === "v" ? `<span class="door lock">Våning: porten kan vara låst, ring på</span>` : ""}
     ${h.e ? "" : `<div class="approx">Ungefärligt läge på kartan</div>`}
     <div class="src"><a href="${maps}" target="_blank" rel="noopener">Vägbeskrivning</a></div></div>
     <label class="chk"><input type="checkbox" id="v${i}"> Besökt</label>`;
